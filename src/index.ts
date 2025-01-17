@@ -22,7 +22,6 @@ const main = async () => {
             }, titleElement);
         }
     }
-
     //Obtain the sheets
     const jmuseScrollerComponent = await page.$('#jmuse-scroller-component')
     if (jmuseScrollerComponent) {
@@ -34,7 +33,7 @@ const main = async () => {
             });
         })
         const sheets = await page.$$('.EEnGW')
-        let imgExtension: AvailableExtensions | undefined;
+        let imgExtension: AvailableExtensions | undefined = undefined;
         for (let i = 0; i < sheets.length; i++) {
             const element = sheets[i];
             await element.evaluate((element) => {
@@ -60,17 +59,17 @@ const main = async () => {
                     continue
                 }
                 const imgSrc = await imgElement.evaluate(img => img.src)
-                if (!imgExtension) {
+                if (imgExtension === undefined) {
                     imgExtension = getExtensionFromUrl(imgSrc)
                 }
                 const imgName = `img-${i}${imgExtension}`
                 await downloadImage(imgSrc, "./sheets/" + imgName)
-                await convertImageToPdf("./sheets/", "./sheets", imgExtension, title)
-                await removeImages("./sheets/")
             } catch (error) {
                 console.log(error)
             }
         }
+        await convertImageToPdf("./sheets/", "./sheets", imgExtension, title)
+        await removeImages("./sheets/")
         browser.close()
         console.log("Script finished")
     }

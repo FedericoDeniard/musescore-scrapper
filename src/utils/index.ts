@@ -95,7 +95,7 @@ function getDimensions(svgContent: string): SVGDimensions {
 
 }
 
-export async function convertImageToPdf(imagePath: string, pdfPath: string, extension: AvailableExtensions, pdfTitle: string) {
+export async function convertImageToPdf(imagePath: string, pdfPath: string, extension: AvailableExtensions | undefined, pdfTitle: string) {
     const files = readdirSync(imagePath).filter(file => !file.toLocaleLowerCase().endsWith('.pdf'))
     const doc = new PDFDocument({ autoFirstPage: false })
     if (!existsSync(pdfPath)) {
@@ -108,7 +108,8 @@ export async function convertImageToPdf(imagePath: string, pdfPath: string, exte
         if (extension === '.svg') {
             const svgContent = readFileSync(path.join(imagePath, files[i]), 'utf-8');
             dimensions = getDimensions(svgContent);
-            doc.addPage({ size: [dimensions.width, dimensions.height] })
+            console.log("Dimensions: ", dimensions)
+            doc.addPage({ size: [dimensions.width - 800, dimensions.height - 800] }) // The dimentions seems to have a 800px margin
             SVGtoPDF(doc, svgContent, 0, 0, {})
         } else {
             doc.addPage()
