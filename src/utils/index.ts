@@ -13,14 +13,14 @@ interface SVGDimensions {
     height: number;
 }
 
-export const getInput = () => {
+export const getInput = (message: string) => {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
     });
 
     return new Promise<string>((resolve) => {
-        rl.question('Enter a string: ', (answer) => {
+        rl.question(message, (answer) => {
             rl.close();
             resolve(answer);
         });
@@ -106,7 +106,7 @@ export async function convertImageToPdf(imagePath: string, pdfPath: string, exte
     if (!existsSync(pdfPath)) {
         mkdirSync(pdfPath, { recursive: true });
     }
-    let savePath = path.join('sheets', pdfTitle)
+    let savePath = path.join('sheets', pdfTitle + '.pdf')
     doc.pipe(createWriteStream(savePath))
     let dimensions: SVGDimensions = { width: 0, height: 0 }
     for (let i = 0; i < files.length; i++) {
@@ -128,10 +128,10 @@ export async function convertImageToPdf(imagePath: string, pdfPath: string, exte
 }
 
 export async function removeImages(imagePath: string) {
-    const files = readdirSync(imagePath);
+    const files = readdirSync(imagePath).filter(file => !file.toLocaleLowerCase().endsWith('.pdf'))
     for (const file of files) {
-        if (!file.endsWith('.pdf')) {
             unlinkSync(path.join(imagePath, file));
         }
     }
-}
+
+

@@ -1,17 +1,15 @@
 import puppeteer, { Browser } from "puppeteer";
-import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, removeImages } from "./utils";
-import { title } from "process";
-
-
+import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, getInput, removeImages } from "./utils";
 
 const main = async () => {
+
+    const url = await getInput('Enter the url of the musescore: ')
     const browser: Browser = await puppeteer.launch();
     const page = await browser.newPage();
 
     await page.setViewport({ width: 1920, height: 1080 });
-    await page.goto("https://musescore.com/ericfontainejazz/scores/5662210");
-    // await page.goto("    https://musescore.com/hmscomp/tchaikovsky-piano-concerto-no_-1-1st");
-    // await page.goto("https://musescore.com/user/39593079/scores/18723181")
+    await page.goto(url);
+
 
     //Obtain the title
     let title = 'musescore'
