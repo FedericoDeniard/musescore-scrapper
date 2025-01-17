@@ -29,16 +29,11 @@ export const getInput = (message: string) => {
 
 export function getExtensionFromUrl(url: string): AvailableExtensions {
 
-    // const extension = path.extname(url).split('?')[0];
-    // if (extension) {
-    //     return extension;
-    // }
-
     if (url.includes('image/jpeg') || url.includes('.jpg')) return '.jpg';
     if (url.includes('image/png') || url.includes('.png')) return '.png';
     if (url.includes('image/svg+xml') || url.includes('.svg')) return '.svg';
 
-    throw new Error('Extension not found');
+    throw new Error('Extension not supported, please contact the developer');
 
 }
 
@@ -130,8 +125,8 @@ export async function convertImageToPdf(imagePath: string, pdfPath: string, exte
 export async function removeImages(imagePath: string) {
     const files = readdirSync(imagePath).filter(file => !file.toLocaleLowerCase().endsWith('.pdf'))
     for (const file of files) {
-            unlinkSync(path.join(imagePath, file));
-        }
+        unlinkSync(path.join(imagePath, file));
     }
+}
 
 
