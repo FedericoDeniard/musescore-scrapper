@@ -1,0 +1,24 @@
+{
+  "name": "musescore-scrapper",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx tsx src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "pdfkit": "^0.16.0",
+    "puppeteer": "^24.1.0",
+    "sharp": "^0.33.5",
+    "svg-to-pdfkit": "^0.1.8"
+  },
+  "devDependencies": {
+    "@types/svg-parser": "^2.0.6",
+    "@types/svg-to-pdfkit": "^0.1.3"
+  }
+}
