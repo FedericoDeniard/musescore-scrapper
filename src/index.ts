@@ -2,9 +2,9 @@ import puppeteer, { Browser, TimeoutError } from "puppeteer";
 import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, getInput, removeImages } from "./utils";
 
 const main = async () => {
+    const url = await getInput('Enter the url of the musescore: ')
+    const browser: Browser = await puppeteer.launch();
     try {
-        const url = await getInput('Enter the url of the musescore: ')
-        const browser: Browser = await puppeteer.launch();
         const page = await browser.newPage();
 
         await page.setViewport({ width: 1920, height: 1080 });
@@ -70,8 +70,7 @@ const main = async () => {
             }
             await convertImageToPdf("./sheets/", "./sheets", imgExtension, title)
             await removeImages("./sheets/")
-            browser.close()
-            console.log("Script finished")
+
         }
     } catch (e) {
         if (e instanceof TimeoutError) {
@@ -81,6 +80,10 @@ const main = async () => {
         else {
             console.log(e)
         }
+    } finally {
+        browser.close()
+        console.log("Script finished")
+
     }
 
 }
