@@ -1,5 +1,5 @@
 import puppeteer, { Browser, TimeoutError } from "puppeteer";
-import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, getInput, removeImages } from "./utils";
+import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, getInput, removeImages } from "./utils/index.ts";
 
 const main = async () => {
     const url = await getInput('Enter the url of the musescore: ')
