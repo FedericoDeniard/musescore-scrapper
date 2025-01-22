@@ -3,8 +3,8 @@ import * as path from 'path';
 import * as https from 'https';
 import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync } from 'fs';
 import sharp from 'sharp';
-import SVGtoPDF from 'svg-to-pdfkit';
 import PDFDocument from 'pdfkit';
+import SVGtoPDF from 'svg-to-pdfkit';
 
 export type AvailableExtensions = '.jpg' | '.png' | '.svg'
 
@@ -97,7 +97,7 @@ function getDimensions(svgContent: string): SVGDimensions {
 
 export async function convertImageToPdf(imagePath: string, pdfPath: string, extension: AvailableExtensions | undefined, pdfTitle: string) {
     const files = readdirSync(imagePath).filter(file => !file.toLocaleLowerCase().endsWith('.pdf'))
-    const doc = new PDFDocument({ autoFirstPage: false })
+    const doc = new PDFDocument({ autoFirstPage: false, font: 'Courier' })
     if (!existsSync(pdfPath)) {
         mkdirSync(pdfPath, { recursive: true });
     }
