@@ -12,12 +12,25 @@ export default defineConfig({
         vite: {
           build: {
             rollupOptions: {
+              // Ajustar las exclusiones
               external: [
+                'puppeteer',
+                'puppeteer-core',
+                'puppeteer-extra',
                 'sharp',
                 'pdfkit',
-                'svg-to-pdfkit',
-                'puppeteer',
-                /^node:.*/,
+                'svg-to-pdfkit'
+              ],
+              output: {
+                // Esto ayuda con módulos nativos
+                format: 'cjs'
+              }
+            },
+            // Configuración importante para electrón
+            commonjsOptions: {
+              dynamicRequireTargets: [
+                // Incluir paquetes nativos necesarios
+                'node_modules/{puppeteer,puppeteer-core,puppeteer-extra,sharp,pdfkit}/**/*'
               ]
             }
           }
@@ -26,12 +39,12 @@ export default defineConfig({
       preload: {
         input: path.join(__dirname, 'electron/preload.ts'),
       },
-      renderer: process.env.NODE_ENV === 'test'
-        ? undefined
-        : {},
-    }),
+      renderer: {}
+    })
   ],
-  optimizeDeps: {
-    exclude: ['sharp', 'pdfkit', 'svg-to-pdfkit', 'puppeteer']
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true  // Necesario para algunos módulos
+    }
   }
 })

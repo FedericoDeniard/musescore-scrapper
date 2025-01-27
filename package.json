@@ -13,7 +13,7 @@
     "bufferutil": "^4.0.9",
     "json5": "^2.2.3",
     "pdfkit": "^0.16.0",
-    "puppeteer": "^24.1.0",
+    "puppeteer": "^24.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sharp": "^0.33.5",
@@ -22,6 +22,7 @@
     "utf-8-validate": "^6.0.5"
   },
   "devDependencies": {
+    "@types/babel__core": "^7.20.5",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@types/svg-parser": "^2.0.6",
