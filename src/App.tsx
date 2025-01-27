@@ -6,20 +6,29 @@ import { SearchBox } from "./components/SearchBox";
 
 function App() {
   const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const downloadUrl = async () => {
     if (url) {
-      // Asegúrate de que 'url' no esté vacío antes de hacer ping
+        setLoading(true);
       console.log(url);
-      window.api.ping();
-      window.api.download(url);
+        const success = await window.api.download(url);
+        setLoading(false);
+        console.log(success);
     }
-  }, [url]); // Esto seguirá siendo reactivo al cambio de 'url'
+    };
+
+    downloadUrl();
+  }, [url]); 
 
   return (
     <div className="container-title">
       <Title />
-      <SearchBox onClick={(getUrl: string) => setUrl(getUrl)} />
+      <SearchBox
+        onClick={(getUrl: string) => setUrl(getUrl)}
+        loading={loading}
+      />
     </div>
   );
 }

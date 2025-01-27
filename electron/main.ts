@@ -73,8 +73,9 @@ app.whenReady().then(() => {
     console.log('pong');
   });
 
-  ipcMain.handle('download', (event, url: string) => {
+  ipcMain.handle('download', async (event, url: string) => {
     event;
-    downloadSheet(url);
+    const success = await downloadSheet(url);
+    return success
   })
 });

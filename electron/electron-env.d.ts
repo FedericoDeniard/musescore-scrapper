@@ -25,7 +25,7 @@ declare namespace NodeJS {
 interface Window {
   ipcRenderer: import('electron').IpcRenderer;
   api: {
-    download: (url: string) => Promise<unknown>
+    download: (url: string) => Promise<boolean>
     ping: () => Promise<void>
   }
 }

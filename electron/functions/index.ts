@@ -1,7 +1,8 @@
 import puppeteer, { Browser, TimeoutError } from "puppeteer";
 import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, removeImages } from "./utils/index.ts";
 
-export const downloadSheet = async (url: string) => {
+export const downloadSheet = async (url: string): Promise<boolean> => {
+    let success = false
     const browser: Browser = await puppeteer.launch();
     try {
         const page = await browser.newPage();
@@ -69,20 +70,20 @@ export const downloadSheet = async (url: string) => {
             }
             await convertImageToPdf("./sheets/", "./sheets", imgExtension, title)
             await removeImages("./sheets/")
-
+            success = true
         }
     } catch (e) {
         if (e instanceof TimeoutError) {
-            console.log("Timeout error, please try again \n" + e)
+            throw new Error("Timeout error, please try again \n" + e)
         }
 
         else {
-            console.log(e)
+            throw new Error("Error downloading sheet, please try again \n" + e)
         }
     } finally {
         browser.close()
         console.log("Script finished")
-
+        return success
     }
 
 }

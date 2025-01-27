@@ -1,7 +1,13 @@
 import { useState } from "react";
 import "./index.css";
+import { Loader } from "../Loader";
 
-export const SearchBox = ({ onClick }: { onClick: (url: string) => void }) => {
+interface SearchBoxProps {
+  onClick: (url: string) => void;
+  loading: boolean;
+}
+
+export const SearchBox = ({ onClick, loading }: SearchBoxProps) => {
   const [url, setUrl] = useState("");
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,12 +27,16 @@ export const SearchBox = ({ onClick }: { onClick: (url: string) => void }) => {
         value={url}
         onChange={handleInput}
       />
+      {!loading ? (
       <input
         className="button"
         type="button"
         value="Download"
         onClick={handleButtonClick}
       />
+      ) : (
+        <Loader />
+      )}
     </div>
   );
 };
