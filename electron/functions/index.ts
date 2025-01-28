@@ -1,8 +1,7 @@
-import puppeteer, { Browser, TimeoutError } from "puppeteer";
+import puppeteer, { Browser, ProtocolError, TimeoutError } from "puppeteer";
 import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, removeImages } from "./utils/index.ts";
 
-export const downloadSheet = async (url: string): Promise<boolean> => {
-    let success = false
+export const downloadSheet = async (url: string): Promise<void> => {
     const browser: Browser = await puppeteer.launch();
     try {
         const page = await browser.newPage();
@@ -55,7 +54,6 @@ export const downloadSheet = async (url: string): Promise<boolean> => {
                     );
                     const imgElement = await element.$('img')
                     if (!imgElement) {
-                        console.log("No img element")
                         continue
                     }
                     const imgSrc = await imgElement.evaluate(img => img.src)
@@ -65,16 +63,20 @@ export const downloadSheet = async (url: string): Promise<boolean> => {
                     const imgName = `img-${i}${imgExtension}`
                     await downloadImage(imgSrc, "./sheets/" + imgName)
                 } catch (error) {
-                    console.log(error)
+                    throw new Error("Error downloading sheet, please try again \n" + error)
                 }
             }
             await convertImageToPdf("./sheets/", "./sheets", imgExtension, title)
             await removeImages("./sheets/")
-            success = true
         }
     } catch (e) {
         if (e instanceof TimeoutError) {
             throw new Error("Timeout error, please try again \n" + e)
+        }
+
+        if (e instanceof ProtocolError) {
+            throw new Error(e.originalMessage)
+
         }
 
         else {
@@ -83,7 +85,6 @@ export const downloadSheet = async (url: string): Promise<boolean> => {
     } finally {
         browser.close()
         console.log("Script finished")
-        return success
     }
 
 }

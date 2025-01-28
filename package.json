@@ -18,6 +18,7 @@
     "react-dom": "^18.2.0",
     "sharp": "^0.33.5",
     "simple-update-notifier": "^2.0.0",
+    "sonner": "^1.7.2",
     "svg-to-pdfkit": "^0.1.8",
     "utf-8-validate": "^6.0.5"
   },

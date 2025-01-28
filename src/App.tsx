@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { Title } from "./components/Title";
 import { SearchBox } from "./components/SearchBox";
+import { toast } from "sonner";
 
 function App() {
   const [url, setUrl] = useState("");
@@ -12,10 +13,17 @@ function App() {
     const downloadUrl = async () => {
     if (url) {
         setLoading(true);
-      console.log(url);
-        const success = await window.api.download(url);
-        setLoading(false);
-        console.log(success);
+
+        toast.promise(window.api.download(url), {
+          loading: "Downloading...",
+          success: () => "Downloaded successfully",
+          error: (error) =>
+            error.message.replace(
+              "Error invoking remote method 'download':",
+              ""
+            ) || `Error downloading the sheet`,
+          finally: async () => setLoading(false),
+        });
     }
     };
 

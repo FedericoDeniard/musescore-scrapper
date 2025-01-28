@@ -73,9 +73,12 @@ app.whenReady().then(() => {
     console.log('pong');
   });
 
-  ipcMain.handle('download', async (event, url: string) => {
-    event;
-    const success = await downloadSheet(url);
-    return success
+  ipcMain.handle('download', async (_, url: string) => {
+    try {
+      await downloadSheet(url);
+    } catch (error) {
+      console.error(error);
+      throw error
+    } // TODO: handle error, Electron envolves the error in another Error
   })
 });
