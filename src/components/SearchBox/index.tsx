@@ -16,6 +16,7 @@ export const SearchBox = ({ onClick, loading }: SearchBoxProps) => {
 
   const handleButtonClick = () => {
     onClick(url);
+    setUrl("");
   };
 
   return (
