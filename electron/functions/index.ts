@@ -43,7 +43,6 @@ export const downloadSheet = async (url: string): Promise<void> => {
                     });
                 })
 
-                try {
                     await page.waitForFunction(
                         (el) => {
                             const img = el.querySelector('img');
@@ -62,12 +61,13 @@ export const downloadSheet = async (url: string): Promise<void> => {
                     }
                     const imgName = `img-${i}${imgExtension}`
                     await downloadImage(imgSrc, "./sheets/" + imgName)
-                } catch (error) {
-                    throw new Error("Error downloading sheet, please try again \n" + error)
-                }
+
             }
             await convertImageToPdf("./sheets/", "./sheets", imgExtension, title)
             await removeImages("./sheets/")
+        }
+        else {
+            throw new Error("We couldn't find any sheet, please check the url and try again")
         }
     } catch (e) {
         if (e instanceof TimeoutError) {
@@ -78,9 +78,12 @@ export const downloadSheet = async (url: string): Promise<void> => {
             throw new Error(e.originalMessage)
 
         }
+        if (e instanceof Error) {
+            throw new Error(e.message)
+        }
 
         else {
-            throw new Error("Error downloading sheet, please try again \n" + e)
+            throw new Error("Error downloading sheet, please try again \n")
         }
     } finally {
         browser.close()
