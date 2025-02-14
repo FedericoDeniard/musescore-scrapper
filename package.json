@@ -3,6 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "description": "An application to download sheets from musescore",
+  "author": "Fufi",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
