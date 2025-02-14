@@ -16,6 +16,7 @@ export const SearchBox = ({ onClick, loading }: SearchBoxProps) => {
 
   const handleButtonClick = () => {
     onClick(url);
+    setUrl("");
   };
 
   return (
@@ -28,12 +29,12 @@ export const SearchBox = ({ onClick, loading }: SearchBoxProps) => {
         onChange={handleInput}
       />
       {!loading ? (
-      <input
-        className="button"
-        type="button"
-        value="Download"
-        onClick={handleButtonClick}
-      />
+        <input
+          className="button"
+          type="button"
+          value="Download"
+          onClick={handleButtonClick}
+        />
       ) : (
         <Loader />
       )}
