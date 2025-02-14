@@ -28,3 +28,4 @@ dist-electron
 node_modules
 sheets/*
 dist/
+release/*
