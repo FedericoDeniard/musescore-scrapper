@@ -1,8 +1,7 @@
-import puppeteer, { Browser, TimeoutError } from "puppeteer";
-import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, getInput, removeImages } from "./utils/index.ts";
+import puppeteer, { Browser, ProtocolError, TimeoutError } from "puppeteer";
+import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl, removeImages } from "./utils/index.ts";
 
-const main = async () => {
-    const url = await getInput('Enter the url of the musescore: ')
+export const downloadSheet = async (url: string): Promise<void> => {
     const browser: Browser = await puppeteer.launch();
     try {
         const page = await browser.newPage();
@@ -44,7 +43,6 @@ const main = async () => {
                     });
                 })
 
-                try {
                     await page.waitForFunction(
                         (el) => {
                             const img = el.querySelector('img');
@@ -55,7 +53,6 @@ const main = async () => {
                     );
                     const imgElement = await element.$('img')
                     if (!imgElement) {
-                        console.log("No img element")
                         continue
                     }
                     const imgSrc = await imgElement.evaluate(img => img.src)
@@ -64,27 +61,33 @@ const main = async () => {
                     }
                     const imgName = `img-${i}${imgExtension}`
                     await downloadImage(imgSrc, "./sheets/" + imgName)
-                } catch (error) {
-                    console.log(error)
-                }
+
             }
             await convertImageToPdf("./sheets/", "./sheets", imgExtension, title)
             await removeImages("./sheets/")
-
+        }
+        else {
+            throw new Error("We couldn't find any sheet, please check the url and try again")
         }
     } catch (e) {
         if (e instanceof TimeoutError) {
-            console.log("Timeout error, please try again \n" + e)
+            throw new Error("Timeout error, please try again \n" + e)
+        }
+
+        if (e instanceof ProtocolError) {
+            throw new Error(e.originalMessage)
+
+        }
+        if (e instanceof Error) {
+            throw new Error(e.message)
         }
 
         else {
-            console.log(e)
+            throw new Error("Error downloading sheet, please try again \n")
         }
     } finally {
         browser.close()
         console.log("Script finished")
-
     }
 
 }
-main()
