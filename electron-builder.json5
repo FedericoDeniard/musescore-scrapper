@@ -15,11 +15,11 @@
   win: {
     target: [
       {
-        target: "nsis",
+        target: "portable",
         arch: ["x64"],
       },
     ],
-    artifactName: "${productName}-Windows-${version}-Setup.${ext}",
+    artifactName: "${productName}-Windows-${version}-Portable.${ext}",
   },
   nsis: {
     oneClick: false,
