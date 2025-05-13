@@ -76,18 +76,20 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
         }
     } catch (e) {
         if (e instanceof TimeoutError) {
+            console.log(e)
             throw new Error("Timeout error, please try again \n" + e)
         }
 
         if (e instanceof ProtocolError) {
             throw new Error(e.originalMessage)
-
         }
         if (e instanceof Error) {
+            console.log(e)
             throw new Error(e.message)
         }
 
         else {
+            console.log(e)
             throw new Error("Error downloading sheet, please try again \n")
         }
     } finally {
