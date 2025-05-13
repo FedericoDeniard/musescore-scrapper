@@ -14,7 +14,11 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const staticFiles = path.join(__dirname, "../frontend/dist");
-app.use(express.static(staticFiles));
+app.use(express.static(staticFiles, {
+    maxAge: '30d',
+    etag: false,
+    immutable: true
+}));
 
 app.post("/", async (req: Request, res: Response, next: NextFunction) => {
     const url = req.body.url;
