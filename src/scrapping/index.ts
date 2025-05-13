@@ -67,8 +67,8 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
 
             }
             console.log("La pagina sigue abierta? " + page.isClosed())
-            await page.close()
-            await browser.close()
+            // await page.close()
+            // await browser.close()
             console.log("Se cerraron los navegadores")
             console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
 
