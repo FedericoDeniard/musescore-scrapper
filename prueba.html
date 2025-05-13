@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Descargar Partitura</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+        margin: 0;
+      }
+      .container {
+        text-align: center;
+        padding: 20px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      input {
+        padding: 8px;
+        width: 300px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Descargar Partitura en PDF</h2>
+      <input
+        type="text"
+        id="sheetUrl"
+        placeholder="Ingresa la URL de la partitura"
+      />
+      <button onclick="downloadSheet()">Descargar</button>
+    </div>
+
+    <script>
+      const downloadSheet = async () => {
+        const sheetUrl = document.getElementById("sheetUrl").value;
+
+        if (!sheetUrl) {
+          alert("Por favor, ingresa una URL válida.");
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:8000", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: sheetUrl }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Error descargando la partitura.");
+          }
+
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+
+          // Crear un enlace temporal para forzar la descarga
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "partitura.pdf"; // Puedes cambiar el nombre si quieres
+          a.click();
+
+          // Liberar el objeto URL
+          window.URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error(error);
+          alert("Hubo un problema al descargar la partitura.");
+        }
+      };
+    </script>
+  </body>
+</html>
