@@ -63,15 +63,16 @@ export async function downloadImages(urls: string[], filepath: string[]): Promis
                         });
 
                         fileStream.on('error', (err) => {
+                            console.log(`File stream error for URL: ${url}, File: ${filepath[i]}`);
                             reject(err);
                         });
                     } else {
                         console.log(`Request failed for URL: ${url} with status code: ${res.statusCode}`);
                         res.resume();
-                        reject(new Error(`Request Failed: ${res.statusCode}`));
+                        reject(new Error(`Request Failed: ${res.statusCode}, URL: ${url}`));
                     }
                 }).on('error', (err) => {
-                    console.log(`Error occurred for URL: ${url}`);
+                    console.log(`HTTP request error occurred for URL: ${url}`);
                     reject(err);
                 });
             });
