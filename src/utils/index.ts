@@ -99,8 +99,7 @@ function getDimensions(svgContent: string): SVGDimensions {
 
 }
 
-export async function convertImageToPdf(imagePath: string, pdfPath: string, extension: AvailableExtensions | undefined, pdfTitle: string) {
-    const files = (await readdir(imagePath)).filter(file => !file.toLocaleLowerCase().endsWith('.pdf'))
+export async function convertImageToPdf(imagePaths: string[], pdfPath: string, extension: AvailableExtensions | undefined, pdfTitle: string) {
     const doc = new PDFDocument({ autoFirstPage: false, font: 'Courier' })
     try {
         await access(pdfPath)
@@ -109,19 +108,21 @@ export async function convertImageToPdf(imagePath: string, pdfPath: string, exte
         await mkdir(pdfPath, { recursive: true });
     }
     pdfTitle = pdfTitle.replaceAll(' ', '_')
-    let savePath = path.join('sheets', pdfTitle + '.pdf')
+    let savePath = path.join(pdfPath, pdfTitle + '.pdf')
     const stream = createWriteStream(savePath)
     doc.pipe(stream)
     let dimensions: SVGDimensions = { width: 0, height: 0 }
-    for (let i = 0; i < files.length; i++) {
+    for (let i = 0; i < imagePaths.length; i++) {
+        const imagePath = imagePaths[i] || "";
+
         if (extension === '.svg') {
-            const svgContent = await readFile(path.join(imagePath, files[i] || ""), 'utf-8');
+            const svgContent = await readFile(imagePath, 'utf-8');
             dimensions = getDimensions(svgContent);
             doc.addPage({ size: [dimensions.width - 800, dimensions.height - 800] }) // The dimentions seems to have a 800px margin
             SVGtoPDF(doc, svgContent, 0, 0, {})
         } else {
             doc.addPage()
-            doc.image(path.join(imagePath, files[i] || ""), {
+            doc.image(imagePath, {
                 fit: [doc.page.width, doc.page.height],
                 align: 'center',
                 valign: 'center'

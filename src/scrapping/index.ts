@@ -7,7 +7,7 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
         const page = await browser.newPage();
 
         await page.setViewport({ width: 1920, height: 1080 });
-        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 300000 });
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 5 * 60 * 1000 });
 
 
         //Obtain the title
@@ -33,6 +33,7 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
             })
             const sheets = await page.$$('.EEnGW')
             let imgExtension: AvailableExtensions | undefined = undefined;
+            const srcPaths: string[] = []
             const imagesPaths: string[] = []
             for (let i = 0; i < sheets.length; i++) {
                 const element = sheets[i];
@@ -52,7 +53,7 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                         const img = el.querySelector('img');
                         return img && img.complete && img.naturalHeight !== 0;
                     },
-                    { timeout: 300000 },
+                    { timeout: 5 * 60 * 1000 },
                     element
                 );
                 const imgElement = await element.$('img')
@@ -60,15 +61,18 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                     continue
                 }
                 const imgSrc = await imgElement.evaluate(img => img.src)
-                if (imgExtension === undefined) {
-                    imgExtension = getExtensionFromUrl(imgSrc)
-                }
-                const imgName = `img-${i}${imgExtension}`
-                const image = await downloadImage(imgSrc, "./sheets/" + imgName)
-                imagesPaths.push(image)
+                srcPaths.push(imgSrc)
 
             }
-            const doc = await convertImageToPdf("./sheets/", "./sheets", imgExtension, title)
+            browser.close()
+            for (const src of srcPaths) {
+                const randomUUID = Math.random().toString(36).substring(2, 9);
+                imgExtension = getExtensionFromUrl(src)
+                const imgName = `img-${randomUUID}${imgExtension}`
+                const image = await downloadImage(src, "./sheets/" + imgName)
+                imagesPaths.push(image)
+            }
+            const doc = await convertImageToPdf(imagesPaths, "./sheets", imgExtension, title)
             return { images: imagesPaths, pdf: doc }
         }
         else {
@@ -76,7 +80,6 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
         }
     } catch (e) {
         if (e instanceof TimeoutError) {
-            console.log(e)
             throw new Error("Timeout error, please try again \n" + e)
         }
 
@@ -84,16 +87,19 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
             throw new Error(e.originalMessage)
         }
         if (e instanceof Error) {
-            console.log(e)
             throw new Error(e.message)
         }
 
         else {
-            console.log(e)
             throw new Error("Error downloading sheet, please try again \n")
         }
     } finally {
-        browser.close()
+        try {
+            browser.close()
+        }
+        catch (e) {
+            console.log(e)
+        }
     }
 
 }
