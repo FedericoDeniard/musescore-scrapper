@@ -3,7 +3,11 @@ import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFrom
 import { randomUUID } from "crypto";
 
 export const downloadSheet = async (url: string): Promise<{ images: string[], pdf: string }> => {
-    const browser: Browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"], headless: true, ignoreDefaultArgs: ['--disable-extensions'] });
+    const browser: Browser = await puppeteer.launch({
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-features=site-per-process", "--single-process"], headless: true, ignoreDefaultArgs: ['--disable-extensions'], protocolTimeout: 3 * 60 * 1000
+    });
     const page = await browser.newPage();
     try {
         await page.setViewport({ width: 1280, height: 800 });
