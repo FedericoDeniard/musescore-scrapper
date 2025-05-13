@@ -27,6 +27,7 @@ export const SearchBox = ({ onClick, loading }: SearchBoxProps) => {
         placeholder="Enter the musescore URL"
         value={url}
         onChange={handleInput}
+        disabled={loading}
       />
       {!loading ? (
         <input
