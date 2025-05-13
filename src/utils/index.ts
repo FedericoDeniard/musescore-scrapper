@@ -38,36 +38,45 @@ export function getExtensionFromUrl(url: string): AvailableExtensions {
 
 }
 
-export async function downloadImage(url: string, filepath: string): Promise<string> {
-    const dir = path.dirname(filepath);
-    try {
-        await access(dir, constants.F_OK);
-    } catch {
-        await mkdir(dir, { recursive: true });
-    }
-    return new Promise((resolve, reject) => {
-        https.get(url, (res) => {
-            if (res.statusCode === 200) {
-                const fileStream = createWriteStream(filepath);
-                res.pipe(fileStream);
+export async function downloadImages(urls: string[], filepath: string[]): Promise<string[]> {
 
-                fileStream.on('finish', () => {
-                    fileStream.close();
-                    resolve(filepath);
-                });
+    await Promise.all(filepath.map(async (file) => {
+        const dir = path.dirname(file);
+        try {
+            await access(dir, constants.F_OK);
+        } catch {
+            await mkdir(dir, { recursive: true });
+        }
+    }));
 
-                fileStream.on('error', (err) => {
+    return Promise.all(
+        urls.map(async (url, i) => {
+            return new Promise<string>((resolve, reject) => {
+                https.get(url, (res) => {
+                    if (res.statusCode === 200) {
+                        const fileStream = createWriteStream(filepath[i] || '');
+                        res.pipe(fileStream);
+
+                        fileStream.on('finish', () => {
+                            fileStream.close();
+                            resolve(filepath[i] || '');
+                        });
+
+                        fileStream.on('error', (err) => {
+                            reject(err);
+                        });
+                    } else {
+                        res.resume();
+                        reject(new Error(`Request Failed: ${res.statusCode}`));
+                    }
+                }).on('error', (err) => {
                     reject(err);
                 });
-            } else {
-                res.resume();
-                reject(new Error(`Request Failed: ${res.statusCode}`));
-            }
-        }).on('error', (err) => {
-            reject(err);
-        });
-    });
+            });
+        })
+    );
 }
+
 
 export const getImageSize = async (imagePath: string): Promise<{ width: number, height: number }> => {
     try {

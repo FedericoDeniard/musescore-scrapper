@@ -1,5 +1,5 @@
 import puppeteer, { Browser, ProtocolError, TimeoutError } from "puppeteer";
-import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl } from "../utils/index";
+import { AvailableExtensions, convertImageToPdf, downloadImages, getExtensionFromUrl } from "../utils/index";
 import { randomUUID } from "crypto";
 
 export const downloadSheet = async (url: string): Promise<{ images: string[], pdf: string }> => {
@@ -71,21 +71,22 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
 
             }
             console.log("La pagina sigue abierta? " + page.isClosed())
-            // await page.close()
+            if (page.isClosed()) await page.close()
             // await browser.close()
             console.log("Se cerraron los navegadores")
             console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
 
             imgExtension = getExtensionFromUrl(srcPaths[0] || "")
+            const imageTempNames: string[] = []
             for (const src of srcPaths) {
                 const random = randomUUID();
-                const imgName = `img-${random}${imgExtension}`
-                const image = await downloadImage(src, "./sheets/" + imgName)
-                imagesPaths.push(image)
-                console.log("Se descargó la imagen: " + image)
-                console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+                const imgName = `./sheets/img-${random}${imgExtension}`
+                imageTempNames.push(imgName)
 
             }
+            imagesPaths.push(...await downloadImages(srcPaths, imageTempNames))
+            console.log("Se descargaron las imagenes: " + imagesPaths.join(", "))
+            console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
 
             const doc = await convertImageToPdf(imagesPaths, "./sheets", imgExtension, title)
             console.log("Se descargó el pdf: " + doc)
