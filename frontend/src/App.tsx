@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { KEYS } from "./constants/keys";
+
 import "./App.css";
 import { Title } from "./components/Title";
 import { SearchBox } from "./components/SearchBox";
@@ -15,7 +17,7 @@ function App() {
         setLoading(true);
 
         toast.promise(
-          fetch("http://localhost:8000", {
+          fetch(KEYS.url, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
