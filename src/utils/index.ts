@@ -52,7 +52,12 @@ export async function downloadImages(urls: string[], filepath: string[]): Promis
     return Promise.all(
         urls.map(async (url, i) => {
             return new Promise<string>((resolve, reject) => {
-                https.get(url, (res) => {
+                https.get(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+                        'Accept': 'image/svg+xml,image/*;q=0.8,*/*;q=0.5'
+                    }
+                }, (res) => {
                     if (res.statusCode === 200) {
                         const fileStream = createWriteStream(filepath[i] || '');
                         res.pipe(fileStream);
