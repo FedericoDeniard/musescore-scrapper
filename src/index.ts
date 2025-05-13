@@ -14,19 +14,14 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const staticFiles = path.join(__dirname, "../frontend/dist");
-console.log(staticFiles);
 app.use(express.static(staticFiles));
 
 app.post("/", async (req: Request, res: Response, next: NextFunction) => {
     const url = req.body.url;
-    console.log(url)
     const { images, pdf } = await downloadSheet(url);
-    console.log(images, "./" + pdf)
     const files = ["./" + pdf, ...images]
-    console.log("llego aca")
     res.setHeader('Content-Disposition', `attachment; filename="${pdf.split("sheets/")[1]}"`);
     res.sendFile(pdf, { root: "./" }, async (err) => {
-        console.log("callback")
         if (err) {
             console.log(err)
             next()

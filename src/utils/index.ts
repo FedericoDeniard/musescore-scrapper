@@ -127,11 +127,9 @@ export async function convertImageToPdf(imagePath: string, pdfPath: string, exte
 
     return new Promise<string>((resolve, reject) => {
         stream.on('finish', () => {
-            console.log("✅ Archivo PDF escrito correctamente");
             resolve(savePath);
         });
         stream.on('error', (err) => {
-            console.log("❌ Error al escribir el PDF");
             reject(err);
         });
     });

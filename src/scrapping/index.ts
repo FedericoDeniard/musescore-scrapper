@@ -92,7 +92,6 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
         }
     } finally {
         browser.close()
-        console.log("Script finished")
     }
 
 }
