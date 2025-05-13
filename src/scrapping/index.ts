@@ -7,7 +7,7 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
         const page = await browser.newPage();
 
         await page.setViewport({ width: 1920, height: 1080 });
-        await page.goto(url);
+        await page.goto(url, { waitUntil: 'load', timeout: 60000 });
 
 
         //Obtain the title
