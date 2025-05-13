@@ -39,6 +39,6 @@ app.post("/", async (req: Request, res: Response, next: NextFunction) => {
 
 app.use(errorHandler);
 
-app.listen(8000, () => {
+app.listen(8000, '0.0.0.0', () => {
     console.log("Escuchando en el puerto " + 8000);
 });
