@@ -62,7 +62,7 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                 }
                 const imgSrc = await imgElement.evaluate(img => img.src)
                 srcPaths.push(imgSrc)
-                console.log("Se obtuvo la imagen: " + imgSrc)
+                console.log("Se obtuvo la imagen numero " + i + ": " + imgSrc)
                 console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
 
             }
@@ -93,8 +93,8 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
             throw new Error("We couldn't find any sheet, please check the url and try again")
         }
     } catch (e) {
-        console.log(e)
         console.log(`Memoria usada durante el crasheo de scrapping: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+        console.log(e)
 
         if (e instanceof TimeoutError) {
             throw new Error("Timeout error, please try again \n" + e)
@@ -112,12 +112,21 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
         }
     } finally {
         console.log("Instancia de browser: ", browser)
-        if (!page.isClosed()) {
-            await page.close();
+        try {
+            if (!page.isClosed()) {
+                await page.close();
+            }
+        } catch (error) {
+            console.log(error)
         }
-        if (browser) {
-            await browser.close();
+        try {
+            if (browser) {
+                await browser.close();
+            }
+        } catch (error) {
+            console.log(error)
         }
+
     }
 
 }
