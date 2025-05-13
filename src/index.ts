@@ -29,7 +29,7 @@ app.post("/", async (req: Request, res: Response, next: NextFunction) => {
             } catch (error) {
                 console.log(error)
             }
-            next()
+            next(err)
         } else {
             removeImages(files)
         }
