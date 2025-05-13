@@ -9,7 +9,6 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
         await page.setViewport({ width: 1920, height: 1080 });
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 5 * 60 * 1000 });
 
-
         //Obtain the title
         let title = 'musescore'
         const asideContainerUnique = await page.$('#aside-container-unique')
