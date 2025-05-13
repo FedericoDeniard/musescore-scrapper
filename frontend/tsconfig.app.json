@@ -3,11 +3,24 @@
     "target": "ES2020",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "moduleResolution": "node", // Esto es para que resuelva los módulos de forma estándar
-    "jsx": "react-jsx",
+    "useDefineForClassFields": true,
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
-    "noEmit": true, // Si usas Vite, Webpack, etc. no necesitas emitir los archivos directamente desde TS
-    "strict": true
+
+    /* Bundler mode */
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src"]
 }
