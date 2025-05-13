@@ -2,16 +2,20 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandler";
 import { downloadSheet } from "./scrapping";
-import { removeImages } from "./utils";
 import { unlink } from "fs";
+import { fileURLToPath } from "url";
+import path, { dirname } from "path";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// app.use(express.static("../javascript"));
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const staticFiles = path.join(__dirname, "../frontend/dist");
+console.log(staticFiles);
+app.use(express.static(staticFiles));
 
 app.post("/", async (req: Request, res: Response, next: NextFunction) => {
     const url = req.body.url;
