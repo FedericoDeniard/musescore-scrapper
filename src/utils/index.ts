@@ -1,11 +1,11 @@
 import readline from 'readline'
 import * as path from 'path';
 import * as https from 'https';
-import { createWriteStream, existsSync, mkdirSync, readdirSync, readFileSync, unlink } from 'fs';
+import { createWriteStream, constants } from 'fs';
+import { mkdir, readdir, access, readFile, unlink } from 'fs/promises';
 import sharp from 'sharp';
 import PDFDocument from 'pdfkit';
 import SVGtoPDF from 'svg-to-pdfkit';
-import { mkdir } from 'fs/promises';
 
 export type AvailableExtensions = '.jpg' | '.png' | '.svg'
 
@@ -39,8 +39,11 @@ export function getExtensionFromUrl(url: string): AvailableExtensions {
 }
 
 export async function downloadImage(url: string, filepath: string): Promise<string> {
-    if (!existsSync(path.dirname(filepath))) {
-        await mkdir(path.dirname(filepath), { recursive: true });
+    const dir = path.dirname(filepath);
+    try {
+        await access(dir, constants.F_OK);
+    } catch {
+        await mkdir(dir, { recursive: true });
     }
     return new Promise((resolve, reject) => {
         https.get(url, (res) => {
@@ -97,10 +100,13 @@ function getDimensions(svgContent: string): SVGDimensions {
 }
 
 export async function convertImageToPdf(imagePath: string, pdfPath: string, extension: AvailableExtensions | undefined, pdfTitle: string) {
-    const files = readdirSync(imagePath).filter(file => !file.toLocaleLowerCase().endsWith('.pdf'))
+    const files = (await readdir(imagePath)).filter(file => !file.toLocaleLowerCase().endsWith('.pdf'))
     const doc = new PDFDocument({ autoFirstPage: false, font: 'Courier' })
-    if (!existsSync(pdfPath)) {
-        mkdirSync(pdfPath, { recursive: true });
+    try {
+        await access(pdfPath)
+    }
+    catch (error) {
+        await mkdir(pdfPath, { recursive: true });
     }
     pdfTitle = pdfTitle.replaceAll(' ', '_')
     let savePath = path.join('sheets', pdfTitle + '.pdf')
@@ -109,7 +115,7 @@ export async function convertImageToPdf(imagePath: string, pdfPath: string, exte
     let dimensions: SVGDimensions = { width: 0, height: 0 }
     for (let i = 0; i < files.length; i++) {
         if (extension === '.svg') {
-            const svgContent = readFileSync(path.join(imagePath, files[i] || ""), 'utf-8');
+            const svgContent = await readFile(path.join(imagePath, files[i] || ""), 'utf-8');
             dimensions = getDimensions(svgContent);
             doc.addPage({ size: [dimensions.width - 800, dimensions.height - 800] }) // The dimentions seems to have a 800px margin
             SVGtoPDF(doc, svgContent, 0, 0, {})
@@ -135,13 +141,13 @@ export async function convertImageToPdf(imagePath: string, pdfPath: string, exte
     });
 }
 
-export function removeImages(imagePaths: string[]) {
+export async function removeImages(imagePaths: string[]) {
     for (const path of imagePaths) {
-        unlink(path, (err) => {
-            if (err) {
-                console.log(err)
-            }
-        });
+        try {
+            await unlink(path);
+        } catch (err) {
+            console.log(err);
+        }
     }
 }
 

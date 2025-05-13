@@ -2,9 +2,9 @@ import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandler";
 import { downloadSheet } from "./scrapping";
-import { unlink } from "fs";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
+import { removeImages } from "./utils";
 
 const app = express();
 
@@ -24,15 +24,14 @@ app.post("/", async (req: Request, res: Response, next: NextFunction) => {
     res.sendFile(pdf, { root: "./" }, async (err) => {
         if (err) {
             console.log(err)
+            try {
+                removeImages(files)
+            } catch (error) {
+                console.log(error)
+            }
             next()
         } else {
-            for (const image of files) {
-                unlink(image, (err) => {
-                    if (err) {
-                        console.log(err)
-                    }
-                })
-            }
+            removeImages(files)
         }
     })
 });
