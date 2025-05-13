@@ -20,9 +20,14 @@ app.use(express.static(staticFiles, {
     immutable: true
 }));
 
+
+
 app.post("/", async (req: Request, res: Response, next: NextFunction) => {
     const url = req.body.url;
+    console.log("Se inicio la petición de la partitura: " + url)
     const { images, pdf } = await downloadSheet(url);
+    console.log("Se termino la petición de la partitura: " + pdf)
+    console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
     const files = ["./" + pdf, ...images]
     res.setHeader('Content-Disposition', `attachment; filename="${pdf.split("sheets/")[1]}"`);
     res.sendFile(pdf, { root: "./" }, async (err) => {

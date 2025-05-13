@@ -1,12 +1,12 @@
 import puppeteer, { Browser, ProtocolError, TimeoutError } from "puppeteer";
 import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl } from "../utils/index";
+import { randomUUID } from "crypto";
 
 export const downloadSheet = async (url: string): Promise<{ images: string[], pdf: string }> => {
     const browser: Browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"], headless: true, ignoreDefaultArgs: ['--disable-extensions'] });
+    const page = await browser.newPage();
     try {
-        const page = await browser.newPage();
-
-        await page.setViewport({ width: 1920, height: 1080 });
+        await page.setViewport({ width: 1280, height: 800 });
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 5 * 60 * 1000 });
 
         //Obtain the title
@@ -20,6 +20,8 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                 }, titleElement);
             }
         }
+        console.log("Se obtuvo el titulo: " + title)
+        console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
         //Obtain the sheets
         const jmuseScrollerComponent = await page.$('#jmuse-scroller-component')
         if (jmuseScrollerComponent) {
@@ -46,7 +48,6 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                         inline: 'nearest'
                     });
                 })
-
                 await page.waitForFunction(
                     (el) => {
                         const img = el.querySelector('img');
@@ -61,23 +62,39 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                 }
                 const imgSrc = await imgElement.evaluate(img => img.src)
                 srcPaths.push(imgSrc)
+                console.log("Se obtuvo la imagen: " + imgSrc)
+                console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
 
             }
+            page.close()
             browser.close()
+            console.log("Se cerraron los navegadores")
+            console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
+            imgExtension = getExtensionFromUrl(srcPaths[0] || "")
             for (const src of srcPaths) {
-                const randomUUID = Math.random().toString(36).substring(2, 9);
-                imgExtension = getExtensionFromUrl(src)
-                const imgName = `img-${randomUUID}${imgExtension}`
+                const random = randomUUID();
+                const imgName = `img-${random}${imgExtension}`
                 const image = await downloadImage(src, "./sheets/" + imgName)
                 imagesPaths.push(image)
+                console.log("Se descargó la imagen: " + image)
+                console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
             }
+
             const doc = await convertImageToPdf(imagesPaths, "./sheets", imgExtension, title)
+            console.log("Se descargó el pdf: " + doc)
+            console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
             return { images: imagesPaths, pdf: doc }
         }
         else {
             throw new Error("We couldn't find any sheet, please check the url and try again")
         }
     } catch (e) {
+        console.log(e)
+        console.log(`Memoria usada durante el crasheo de scrapping: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
+
         if (e instanceof TimeoutError) {
             throw new Error("Timeout error, please try again \n" + e)
         }
@@ -93,12 +110,7 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
             throw new Error("Error downloading sheet, please try again \n")
         }
     } finally {
-        try {
-            browser.close()
-        }
-        catch (e) {
-            console.log(e)
-        }
+        if (page) await page.close().catch((e) => { console.log(e) })
+        if (browser) await browser.close().catch((e) => { console.log(e) })
     }
-
 }
