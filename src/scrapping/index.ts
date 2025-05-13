@@ -66,8 +66,9 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                 console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
 
             }
-            page.close()
-            browser.close()
+            console.log("La pagina sigue abierta? " + page.isClosed())
+            await page.close()
+            await browser.close()
             console.log("Se cerraron los navegadores")
             console.log(`Memoria usada: ${(process.memoryUsage().rss / 1024 / 1024).toFixed(2)} MB`);
 
@@ -110,7 +111,13 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
             throw new Error("Error downloading sheet, please try again \n")
         }
     } finally {
-        if (page) await page.close().catch((e) => { console.log(e) })
-        if (browser) await browser.close().catch((e) => { console.log(e) })
+        console.log("Instancia de browser: ", browser)
+        if (!page.isClosed()) {
+            await page.close();
+        }
+        if (browser) {
+            await browser.close();
+        }
     }
+
 }
