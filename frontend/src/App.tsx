@@ -53,7 +53,7 @@ function App() {
           {
             loading: "Downloading...",
             success: "Downloaded successfully",
-            error: (error) =>
+            error: (error: Error) =>
               error.message.replace(
                 "Error invoking remote method 'download':",
                 ""

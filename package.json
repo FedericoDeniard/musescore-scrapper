@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c && cd frontend && npm run build",
+    "build": "rollup -c && cd frontend && npm install && npm run build",
     "dev": "rollup -c -w",
     "start": "node dist/index.js"
   },
