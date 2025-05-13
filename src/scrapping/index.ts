@@ -52,7 +52,7 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                         const img = el.querySelector('img');
                         return img && img.complete && img.naturalHeight !== 0;
                     },
-                    {},
+                    { timeout: 120000 },
                     element
                 );
                 const imgElement = await element.$('img')
