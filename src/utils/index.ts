@@ -66,10 +66,12 @@ export async function downloadImages(urls: string[], filepath: string[]): Promis
                             reject(err);
                         });
                     } else {
+                        console.log(`Request failed for URL: ${url} with status code: ${res.statusCode}`);
                         res.resume();
                         reject(new Error(`Request Failed: ${res.statusCode}`));
                     }
                 }).on('error', (err) => {
+                    console.log(`Error occurred for URL: ${url}`);
                     reject(err);
                 });
             });
