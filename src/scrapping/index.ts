@@ -2,12 +2,12 @@ import puppeteer, { Browser, ProtocolError, TimeoutError } from "puppeteer";
 import { AvailableExtensions, convertImageToPdf, downloadImage, getExtensionFromUrl } from "../utils/index";
 
 export const downloadSheet = async (url: string): Promise<{ images: string[], pdf: string }> => {
-    const browser: Browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"], headless: true });
+    const browser: Browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"], headless: true, ignoreDefaultArgs: ['--disable-extensions'] });
     try {
         const page = await browser.newPage();
 
         await page.setViewport({ width: 1920, height: 1080 });
-        await page.goto(url, { waitUntil: 'load', timeout: 60000 });
+        await page.goto(url);
 
 
         //Obtain the title
