@@ -9,14 +9,10 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
             "--disable-gpu",
             "--disable-features=site-per-process", "--single-process"], headless: true, ignoreDefaultArgs: ['--disable-extensions'], protocolTimeout: 3 * 60 * 1000
     });
-    await delay(1000)
     const page = await browser.newPage();
-    await delay(1000)
     try {
         await page.setViewport({ width: 1280, height: 800 });
-        await delay(1000)
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 5 * 60 * 1000 });
-        await delay(1000)
 
         //Obtain the title
         let title = 'musescore'
