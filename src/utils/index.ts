@@ -2,10 +2,11 @@ import readline from 'readline'
 import * as path from 'path';
 import * as https from 'https';
 import { createWriteStream, constants } from 'fs';
-import { mkdir, readdir, access, readFile, unlink } from 'fs/promises';
+import { mkdir, access, readFile, unlink } from 'fs/promises';
 import sharp from 'sharp';
 import PDFDocument from 'pdfkit';
 import SVGtoPDF from 'svg-to-pdfkit';
+import request from "requestretry"
 
 export type AvailableExtensions = '.jpg' | '.png' | '.svg'
 
@@ -39,7 +40,6 @@ export function getExtensionFromUrl(url: string): AvailableExtensions {
 }
 
 export async function downloadImages(urls: string[], filepath: string[]): Promise<string[]> {
-
     await Promise.all(filepath.map(async (file) => {
         const dir = path.dirname(file);
         try {
@@ -52,15 +52,15 @@ export async function downloadImages(urls: string[], filepath: string[]): Promis
     return Promise.all(
         urls.map(async (url, i) => {
             return new Promise<string>((resolve, reject) => {
-                https.get(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                        'Accept': 'image/svg+xml,image/*;q=0.8,*/*;q=0.5'
-                    }
-                }, (res) => {
-                    if (res.statusCode === 200) {
+
+                request({ url: url, maxAttempts: 5, retryDelay: 1000 }, (err, response, body) => {
+                    if (err) {
+                        console.log(`HTTP request error occurred for URL: ${url}.`);
+                        reject(err);
+                    } else {
+                        console.log(`HTTP request successful for URL: ${url}`);
                         const fileStream = createWriteStream(filepath[i] || '');
-                        res.pipe(fileStream);
+                        response.pipe(fileStream);
 
                         fileStream.on('finish', () => {
                             fileStream.close();
@@ -69,17 +69,11 @@ export async function downloadImages(urls: string[], filepath: string[]): Promis
 
                         fileStream.on('error', (err) => {
                             console.log(`File stream error for URL: ${url}, File: ${filepath[i]}`);
-                            reject(err);
+                            console.log(err);
+
                         });
-                    } else {
-                        console.log(`Request failed for URL: ${url} with status code: ${res.statusCode}`);
-                        res.resume();
-                        reject(new Error(`Request Failed: ${res.statusCode}, URL: ${url}`));
                     }
-                }).on('error', (err) => {
-                    console.log(`HTTP request error occurred for URL: ${url}`);
-                    reject(err);
-                });
+                })
             });
         })
     );
