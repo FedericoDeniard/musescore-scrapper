@@ -1,7 +1,6 @@
 import puppeteer, { Browser, ProtocolError, TimeoutError } from "puppeteer";
 import { AvailableExtensions, convertImageToPdf, downloadImages, getExtensionFromUrl } from "../utils/index";
 import { randomUUID } from "crypto";
-import { delay } from "src/utils/delay";
 
 export const downloadSheet = async (url: string): Promise<{ images: string[], pdf: string }> => {
     const browser: Browser = await puppeteer.launch({
