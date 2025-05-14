@@ -113,16 +113,21 @@ export async function convertImageToPdf(imagePaths: string[], pdfPath: string, e
         await access(pdfPath)
     }
     catch (error) {
+        console.log("Error al acceder a la carpeta")
         await mkdir(pdfPath, { recursive: true });
+        console.log("Se creó la carpeta")
     }
+
     pdfTitle = pdfTitle.replaceAll(' ', '_')
     let savePath = path.join(pdfPath, pdfTitle + '.pdf')
     const stream = createWriteStream(savePath)
     doc.pipe(stream)
     let dimensions: SVGDimensions = { width: 0, height: 0 }
+    console.log("Las imagenes a convertir son: " + imagePaths.join(", "))
     for (let i = 0; i < imagePaths.length; i++) {
         const imagePath = imagePaths[i] || "";
-
+        console.log("Iteracion: " + i + 1 + " de " + imagePaths.length)
+        console.log("Se va a convertir la imagen: " + imagePath)
         if (extension === '.svg') {
             const svgContent = await readFile(imagePath, 'utf-8');
             dimensions = getDimensions(svgContent);
@@ -142,9 +147,11 @@ export async function convertImageToPdf(imagePaths: string[], pdfPath: string, e
 
     return new Promise<string>((resolve, reject) => {
         stream.on('finish', () => {
+            console.log(`Se guardó el pdf: ${savePath}`);
             resolve(savePath);
         });
         stream.on('error', (err) => {
+            console.log("No se pudo guardar el pdf");
             reject(err);
         });
     });
