@@ -1,11 +1,11 @@
 import readline from 'readline'
 import * as path from 'path';
-import * as https from 'https';
 import { createWriteStream, constants } from 'fs';
-import { mkdir, readdir, access, readFile, unlink } from 'fs/promises';
+import { mkdir, access, readFile, unlink, writeFile } from 'fs/promises';
 import sharp from 'sharp';
 import PDFDocument from 'pdfkit';
-import SVGtoPDF from 'svg-to-pdfkit';
+import SVGtoPDF, { SVGtoPDFOptions } from 'svg-to-pdfkit';
+import request from "requestretry"
 
 export type AvailableExtensions = '.jpg' | '.png' | '.svg'
 
@@ -39,7 +39,6 @@ export function getExtensionFromUrl(url: string): AvailableExtensions {
 }
 
 export async function downloadImages(urls: string[], filepath: string[]): Promise<string[]> {
-
     await Promise.all(filepath.map(async (file) => {
         const dir = path.dirname(file);
         try {
@@ -52,34 +51,25 @@ export async function downloadImages(urls: string[], filepath: string[]): Promis
     return Promise.all(
         urls.map(async (url, i) => {
             return new Promise<string>((resolve, reject) => {
-                https.get(url, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-                        'Accept': 'image/svg+xml,image/*;q=0.8,*/*;q=0.5'
-                    }
-                }, (res) => {
-                    if (res.statusCode === 200) {
-                        const fileStream = createWriteStream(filepath[i] || '');
-                        res.pipe(fileStream);
 
-                        fileStream.on('finish', () => {
-                            fileStream.close();
-                            resolve(filepath[i] || '');
-                        });
-
-                        fileStream.on('error', (err) => {
-                            console.log(`File stream error for URL: ${url}, File: ${filepath[i]}`);
-                            reject(err);
-                        });
+                request({ url: url, maxAttempts: 5, retryDelay: 1000 }, async (err, response, body) => {
+                    if (err) {
+                        console.log(`HTTP request error occurred for URL: ${url}.`);
+                        reject(err);
                     } else {
-                        console.log(`Request failed for URL: ${url} with status code: ${res.statusCode}`);
-                        res.resume();
-                        reject(new Error(`Request Failed: ${res.statusCode}, URL: ${url}`));
+                        console.log(`HTTP request successful for URL: ${url}`);
+                        const file = filepath[i] || "";
+
+                        try {
+                            await writeFile(file, body)
+                            resolve(file);
+                        } catch (error) {
+                            console.log(`Error writing file: ${file}.`);
+                            console.log(err)
+                            reject(error);
+                        }
                     }
-                }).on('error', (err) => {
-                    console.log(`HTTP request error occurred for URL: ${url}`);
-                    reject(err);
-                });
+                })
             });
         })
     );
@@ -99,45 +89,103 @@ export const getImageSize = async (imagePath: string): Promise<{ width: number, 
 }
 
 function getDimensions(svgContent: string): SVGDimensions {
-    const heightRegex = /height\s*=\s*["']([\d.]+)["']/;
-    const widthRegex = /width\s*=\s*["']([\d.]+)["']/;
+    // Buscar atributos directos height/width
+    const heightRegex = /height\s*=\s*["']([^"']+)["']/i;
+    const widthRegex = /width\s*=\s*["']([^"']+)["']/i;
 
+    // Buscar en viewBox (formato: min-x min-y width height)
+    const viewBoxRegex = /viewBox\s*=\s*["']([^"']+)["']/i;
+
+    let height = 0;
+    let width = 0;
+
+    // Intentar obtener height/width directos
     const matchHeight = svgContent.match(heightRegex);
     const matchWidth = svgContent.match(widthRegex);
 
-    if (!matchHeight || !matchWidth) {
-        return { width: 0, height: 0 };
+    if (matchHeight) {
+        matchHeight[1] = matchHeight[1] || '';
+        height = parseFloat(matchHeight[1].replace(/[^0-9.]/g, '')) || 0;
     }
 
-    const height = parseFloat(matchHeight[1] || "0");
-    const width = parseFloat(matchWidth[1] || "0");
+    if (matchWidth) {
+        matchWidth[1] = matchWidth[1] || '';
+        width = parseFloat(matchWidth[1].replace(/[^0-9.]/g, '')) || 0;
+    }
+
+    // Si no se encontraron dimensiones directas o son 0, intentar con viewBox
+    if ((!height || !width) && svgContent.includes('viewBox')) {
+        const matchViewBox = svgContent.match(viewBoxRegex);
+
+        if (matchViewBox) {
+            matchViewBox[1] = matchViewBox[1] || '';
+            const viewBoxValues = matchViewBox[1].trim().split(/\s+/);
+
+            if (viewBoxValues.length === 4) {
+                // Si no hay width, usar el del viewBox
+                if (!width) {
+                    viewBoxValues[2] = viewBoxValues[2] || '';
+                    width = parseFloat(viewBoxValues[2]) || 0;
+                }
+
+                // Si no hay height, usar el del viewBox
+                if (!height) {
+                    viewBoxValues[3] = viewBoxValues[3] || '';
+                    height = parseFloat(viewBoxValues[3]) || 0;
+                }
+            }
+        }
+    }
 
     return { width, height };
-
 }
-
 export async function convertImageToPdf(imagePaths: string[], pdfPath: string, extension: AvailableExtensions | undefined, pdfTitle: string) {
-    const doc = new PDFDocument({ autoFirstPage: false, font: 'Courier' })
     try {
         await access(pdfPath)
     }
     catch (error) {
+        console.log("Error al acceder a la carpeta")
         await mkdir(pdfPath, { recursive: true });
+        console.log("Se creó la carpeta")
     }
+
     pdfTitle = pdfTitle.replaceAll(' ', '_')
     let savePath = path.join(pdfPath, pdfTitle + '.pdf')
+
+    const doc = new PDFDocument({ autoFirstPage: false, font: 'Courier', compress: true });
+
     const stream = createWriteStream(savePath)
     doc.pipe(stream)
+
     let dimensions: SVGDimensions = { width: 0, height: 0 }
+    console.log("Las imagenes a convertir son: " + imagePaths.join(", "))
+
     for (let i = 0; i < imagePaths.length; i++) {
         const imagePath = imagePaths[i] || "";
+        console.log("Iteracion: " + (i + 1) + " de " + imagePaths.length)
+        console.log("Se va a convertir la imagen: " + imagePath)
 
         if (extension === '.svg') {
+            console.log("La imagen es un svg")
             const svgContent = await readFile(imagePath, 'utf-8');
             dimensions = getDimensions(svgContent);
-            doc.addPage({ size: [dimensions.width - 800, dimensions.height - 800] }) // The dimentions seems to have a 800px margin
-            SVGtoPDF(doc, svgContent, 0, 0, {})
+            console.log("Las dimensiones de la imagen son: " + dimensions.width + "x" + dimensions.height)
+
+            const pageWidth = Math.max(dimensions.width, 100)
+            const pageHeight = Math.max(dimensions.height, 100)
+
+            doc.addPage({ size: [pageWidth, pageHeight] }) // The dimentions seems to have a 800px margin
+
+            const svgOptions: SVGtoPDFOptions = {
+                preserveAspectRatio: 'xMidYMid meet',
+                width: pageWidth,
+                height: pageHeight,
+                assumePt: false,
+                useCSS: true
+            }
+            SVGtoPDF(doc, svgContent, 0, 0, svgOptions)
         } else {
+            console.log("La imagen es una imagen")
             doc.addPage()
             doc.image(imagePath, {
                 fit: [doc.page.width, doc.page.height],
@@ -151,9 +199,11 @@ export async function convertImageToPdf(imagePaths: string[], pdfPath: string, e
 
     return new Promise<string>((resolve, reject) => {
         stream.on('finish', () => {
+            console.log(`Se guardó el pdf: ${savePath}`);
             resolve(savePath);
         });
         stream.on('error', (err) => {
+            console.log("No se pudo guardar el pdf");
             reject(err);
         });
     });

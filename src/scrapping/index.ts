@@ -37,13 +37,17 @@ export const downloadSheet = async (url: string): Promise<{ images: string[], pd
                 });
             })
             const sheets = await page.$$('.EEnGW')
+            if (sheets.length === 0) {
+                throw new Error("No se encontraron hojas en la página. Posiblemente la clase '.EEnGW' cambió o no es una partitura válida.")
+            }
             let imgExtension: AvailableExtensions | undefined = undefined;
             const srcPaths: string[] = []
             const imagesPaths: string[] = []
             for (let i = 0; i < sheets.length; i++) {
                 const element = sheets[i];
                 if (!element) {
-                    throw new Error("We couldn't find any sheet, please check the url and try again")
+                    console.warn(`⚠️ El elemento sheet #${i} está vacío`);
+                    continue;
                 }
                 await element.evaluate((element) => {
                     element.scrollIntoView({
