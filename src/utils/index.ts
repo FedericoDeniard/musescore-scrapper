@@ -2,7 +2,7 @@ import readline from 'readline'
 import * as path from 'path';
 import * as https from 'https';
 import { createWriteStream, constants } from 'fs';
-import { mkdir, access, readFile, unlink } from 'fs/promises';
+import { mkdir, access, readFile, unlink, writeFile } from 'fs/promises';
 import sharp from 'sharp';
 import PDFDocument from 'pdfkit';
 import SVGtoPDF from 'svg-to-pdfkit';
@@ -53,25 +53,22 @@ export async function downloadImages(urls: string[], filepath: string[]): Promis
         urls.map(async (url, i) => {
             return new Promise<string>((resolve, reject) => {
 
-                request({ url: url, maxAttempts: 5, retryDelay: 1000 }, (err, response, body) => {
+                request({ url: url, maxAttempts: 5, retryDelay: 1000 }, async (err, response, body) => {
                     if (err) {
                         console.log(`HTTP request error occurred for URL: ${url}.`);
                         reject(err);
                     } else {
                         console.log(`HTTP request successful for URL: ${url}`);
-                        const fileStream = createWriteStream(filepath[i] || '');
-                        response.pipe(fileStream);
+                        const file = filepath[i] || "";
 
-                        fileStream.on('finish', () => {
-                            fileStream.close();
-                            resolve(filepath[i] || '');
-                        });
-
-                        fileStream.on('error', (err) => {
-                            console.log(`File stream error for URL: ${url}, File: ${filepath[i]}`);
-                            console.log(err);
-
-                        });
+                        try {
+                            await writeFile(file, body)
+                            resolve(file);
+                        } catch (error) {
+                            console.log(`Error writing file: ${file}.`);
+                            console.log(err)
+                            reject(error);
+                        }
                     }
                 })
             });
