@@ -1,12 +1,12 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "watchPatterns": ["src/**/*", "frontend/**/*", "package.json"],
+    "watchPatterns": ["src/**/*", "frontend/**/*"],
     "buildCommand": "npm run build",
     "nixpacksConfigPath": "nixpacks.toml"
   },
   "deploy": {
-    "startCommand": "npm pm2 start dist/index.js 'max'",
+    "startCommand": "npm run start",
     "restartPolicyType": "ALWAYS",
     "restartPolicyMaxRetries": 5
   }
