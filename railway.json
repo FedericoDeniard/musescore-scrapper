@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "watchPatterns": ["src/**/*", "frontend/**/*"],
+    "watchPatterns": ["src/**/*", "frontend/**/*", "package.json"],
     "buildCommand": "npm run build",
     "nixpacksConfigPath": "nixpacks.toml"
   },
