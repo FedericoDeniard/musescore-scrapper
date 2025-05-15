@@ -6,7 +6,7 @@
     "nixpacksConfigPath": "nixpacks.toml"
   },
   "deploy": {
-    "startCommand": "npm run start",
+    "startCommand": "npm pm2 start dist/index.js 'max'",
     "restartPolicyType": "ALWAYS",
     "restartPolicyMaxRetries": 5
   }
