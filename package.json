@@ -7,8 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c && cd frontend && npm install && npm run build",
     "dev": "rollup -c -w",
-    "start": "node dist/index.js",
-    "pm2": "pm2 delete all && pm2 start dist/index.js -i 2"
+    "start": "node dist/index.js"
   },
   "repository": {
     "type": "git",
