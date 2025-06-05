@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c && cd frontend && npm install && npm run build",
-    "dev": "rollup -c -w",
+    "dev": "npm run build && node --env-file .env dist/index.js",
     "start": "node dist/index.js"
   },
   "repository": {
@@ -24,6 +24,8 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "jose": "^6.0.11",
+    "jsonwebtoken": "^9.0.2",
     "pdfkit": "^0.17.1",
     "puppeteer": "^24.8.2",
     "requestretry": "^7.1.0",
@@ -37,6 +39,7 @@
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.17",
     "@types/pdfkit": "^0.13.9",
     "@types/requestretry": "^1.13.3",

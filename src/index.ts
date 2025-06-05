@@ -1,3 +1,4 @@
+import KEYS from "./constants/KEYS";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import { errorHandler } from "./middleware/errorHandler";
@@ -5,6 +6,9 @@ import { downloadSheet } from "./scrapping";
 import { fileURLToPath } from "url";
 import path, { dirname } from "path";
 import { removeImages } from "./utils";
+import { validateJWT } from "./middleware/auth";
+
+console.log(KEYS)
 
 const app = express();
 
@@ -20,7 +24,7 @@ app.use(express.static(staticFiles, {
     immutable: true
 }));
 
-
+app.use(validateJWT);
 
 app.post("/", async (req: Request, res: Response, next: NextFunction) => {
     const url = req.body.url;
