@@ -32,12 +32,10 @@ export const validateJWT = async (
     }
 
     const token = authHeader.split(' ')[1];
-    // Verificar que el token no esté vacío
     if (!token) {
         throw new HttpError('Token vacío', 401);
     }
 
-    // Verificar el token usando jose
     const { payload } = await jwtVerify(token, JWKS, {
         audience: process.env.AWS_USER_POOL_CLIENT_ID,
         issuer: `https://cognito-idp.${process.env.AWS_DEFAULT_REGION}.amazonaws.com/${process.env.AWS_USER_POOL_ID}`,
@@ -45,14 +43,11 @@ export const validateJWT = async (
 
     const decodedToken = payload as CognitoJWTPayload;
 
-    // Verificar que sea un ID token
     if (decodedToken.token_use !== 'id') {
         throw new HttpError('Tipo de token incorrecto', 401);
     }
 
-    // Agregar información del usuario al request
     req.user = decodedToken;
-    console.log("Token validado correctamente")
     next();
 
 };
